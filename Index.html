@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Grand Gesture for Montana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@600&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background: radial-gradient(circle at center, #2b0000 0%, #050505 100%);
+            color: white; font-family: 'Montserrat', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        #fwCanvas { z-index: 5; }
+
+        .container {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+
+        #message {
+            font-family: 'Great Vibes', cursive;
+            font-size: clamp(3rem, 12vw, 5rem);
+            text-shadow: 0 0 20px #ff4d4d;
+            opacity: 0; transform: translateY(30px);
+            margin-bottom: 10px;
+        }
+
+        /* --- Angelo & the Rose Container --- */
+        .stage {
+            display: flex; flex-direction: row; align-items: flex-end;
+            justify-content: center; gap: 20px; opacity: 0;
+        }
+
+        /* --- Angelo Character Styling --- */
+        .angelo-box { width: 120px; height: 180px; position: relative; }
+        .white-coat { fill: #ffffff; stroke: #ccc; stroke-width: 1; }
+        .skin { fill: #ffdbac; }
+        .scrubs { fill: #add8e6; }
+
+        /* Animation for blowing the kiss */
+        @keyframes blowKiss {
+            0% { transform: scale(1); }
+            40% { transform: translateY(-5px) rotate(-5deg); }
+            60% { transform: translateY(0) rotate(0); }
+        }
+        .angelo-anim { animation: blowKiss 2s infinite ease-in-out; }
+
+        /* Floating Heart from Kiss */
+        #heart-kiss {
+            position: absolute; font-size: 2rem; color: #ff4d4d;
+            opacity: 0; z-index: 15;
+        }
+        @keyframes heartFly {
+            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+            20% { opacity: 1; }
+            100% { opacity: 0; transform: translate(100px, -150px) scale(2) rotate(20deg); }
+        }
+        .flying { animation: heartFly 3s infinite linear; }
+
+        /* --- UI Button --- */
+        #start-btn {
+            padding: 20px 40px; font-size: 1.2rem; cursor: pointer;
+            background: #e32636; border: none; border-radius: 50px;
+            color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(227, 38, 54, 0.5);
+            transition: 0.3s;
+        }
+        #start-btn:hover { transform: scale(1.1); background: #ff4d4d; }
+
+        .visible { opacity: 1 !important; transform: translateY(0) !important; transition: all 1.5s ease; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <canvas id="fwCanvas"></canvas>
+
+    <div class="container">
+        <button id="start-btn">Click for Montana</button>
+        
+        <div id="message">I love you Montana</div>
+
+        <div class="stage" id="stage">
+            <div class="angelo-box angelo-anim">
+                <div id="heart-kiss">❤️</div>
+                <svg viewBox="0 0 100 150" width="120" height="180">
+                    <circle cx="50" cy="35" r="20" class="skin" />
+                    <rect x="42" y="32" width="16" height="5" fill="#333" rx="2" /> <path d="M45,45 Q50,52 55,45" fill="none" stroke="#333" stroke-width="2" /> <path d="M20,150 L80,150 L75,60 L25,60 Z" class="scrubs" />
+                    <path d="M25,60 L50,65 L75,60 L85,150 L15,150 Z" class="white-coat" />
+                    <rect x="55" y="80" width="15" height="10" fill="#eee" /> <path d="M45,65 L45,90 M55,65 L55,90" stroke="#555" stroke-width="2" /> <path d="M25,80 Q10,70 40,45" fill="none" stroke="#ffdbac" stroke-width="8" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <svg viewBox="0 0 100 150" width="120" height="180">
+                <path d="M50,140 L50,80" stroke="#2e8b57" stroke-width="4" fill="none" />
+                <path d="M50,80 C30,60 30,30 50,10 C70,30 70,60 50,80 Z" fill="#e32636" />
+                <path d="M50,80 C40,70 40,50 50,40 C60,50 60,70 50,80" fill="#ff4d4d" opacity="0.6" />
+                <path d="M50,110 Q30,100 20,115 Q35,125 50,110" fill="#2e8b57" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('start-btn');
+        const msg = document.getElementById('message');
+        const stage = document.getElementById('stage');
+        const kiss = document.getElementById('heart-kiss');
+        const canvas = document.getElementById('fwCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let audioCtx;
+
+        // --- MAGICAL MUSIC SYNTH ---
+        function playMusic() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.2));
+                
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + (i * 0.2));
+                gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + (i * 0.2) + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.2) + 1.5);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(audioCtx.currentTime + (i * 0.2));
+                osc.stop(audioCtx.currentTime + (i * 0.2) + 2);
+            });
+        }
+
+        // --- FIREWORKS SYSTEM ---
+        let particles = [];
+        function createFirework() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height * 0.5;
+            const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+            for(let i=0; i<50; i++) {
+                particles.push({
+                    x, y, 
+                    vx: (Math.random()-0.5)*10, 
+                    vy: (Math.random()-0.5)*10, 
+                    alpha: 1, color
+                });
+            }
+        }
+
+        function updateParticles() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.alpha -= 0.01;
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, 7); ctx.fill();
+                if(p.alpha <= 0) particles.splice(i, 1);
+            });
+            requestAnimationFrame(updateParticles);
+        }
+
+        function start() {
+            btn.classList.add('hidden');
+            msg.classList.add('visible');
+            stage.classList.add('visible');
+            kiss.classList.add('flying');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            playMusic();
+            updateParticles();
+            setInterval(createFirework, 800);
+        }
+
+        btn.addEventListener('click', start);
+    </script>
+</body>
+</html>
